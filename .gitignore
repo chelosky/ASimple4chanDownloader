@@ -1,0 +1,5 @@
+.DS_STORE
+OldStuff/
+__pycache__/
+ghostdriver.log
+version1GUI.ui

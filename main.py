@@ -1,6 +1,4 @@
-import appGui
+import mainWindowGui
 
 if __name__ == "__main__":
-    print("INICIANDO")
-    appGui.runApp()
-    print("FINALIZADO")
+    mainWindowGui.RunApp()

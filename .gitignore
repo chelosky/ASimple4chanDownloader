@@ -2,4 +2,8 @@
 OldStuff/
 __pycache__/
 ghostdriver.log
-version1GUI.ui
+*.ui
+*.png
+*.jpg
+*.gif
+*.webm

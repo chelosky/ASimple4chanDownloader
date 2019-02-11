@@ -1,4 +1,4 @@
-# &middot; [4CHANDOWNLOADER] &middot; ![pypi supported versions](https://img.shields.io/pypi/pyversions/websockets.svg)
+# &middot; [4CHANDOWNLOADER] &middot;
 
 ## Summary
 

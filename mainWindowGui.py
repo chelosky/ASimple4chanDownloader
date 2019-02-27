@@ -1,4 +1,9 @@
 # -*- coding: utf-8 -*-
+"""
+4CHANDOWNLOADER, is a python application with the aim of downloading all 
+the files of a specific thread. (Only for educational purposes)
+author:  Chelosky
+"""
 import os
 import requests
 from PyQt5 import QtCore, QtGui, QtWidgets
@@ -8,8 +13,14 @@ from PyQt5.QtWidgets import *
 from tqdm import tqdm
 from bs4 import BeautifulSoup
 
+"""
+Ui_MainWindow: GUI CLASS
+"""
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
+        """
+        Setup the initial Window
+        """
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(800, 600)
         MainWindow.setFixedSize(800,600)
@@ -19,6 +30,9 @@ class Ui_MainWindow(object):
         self.__AssignFunctionality()
 
     def __CreateUi(self,MainWindow):
+        """
+        Just Create the buttons,labels,inputs,statusbar,etc
+        """
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.progressBar = QtWidgets.QProgressBar(self.centralwidget)
@@ -73,6 +87,9 @@ class Ui_MainWindow(object):
         MainWindow.setStatusBar(self.statusbar)
     
     def __RetranslateUi(self, MainWindow):
+        """
+        Last config of labels and buttons. Just change the text of them.
+        """
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "4chanDownloader"))
         self.pushButton.setText(_translate("MainWindow", "DOWNLOAD"))
@@ -81,6 +98,14 @@ class Ui_MainWindow(object):
         self.label_3.setText(_translate("MainWindow", "-Chelosky-"))
     
     def __AssignFunctionality(self):
+        """
+        Here just define the initial functionality of the app, for example:
+            -Progress Bar is gonna be disabled and not visible.(Only show when we are
+                                                                downloading file, dah)
+            -Bind the a WorkerThread with the main app/GUI. This workerThread do the async work,
+             like download files,access to the site,etc.(Why? well if we don't use a workerthread
+                                                        the app freeze.)
+        """
         self.progressBar.setValue(0)
         self.progressBar.setVisible(False)
         self.plainTextEdit.setEnabled(False)
@@ -94,56 +119,103 @@ class Ui_MainWindow(object):
         self.pushButton.clicked.connect(self.__ButtonClicked)
     
     def UpdateConsole(self,text):
+        """
+        Public function for show status text in console
+        """
         self.__AddTextToConsole(text)
     
     def SetUpPB(self,numero):
+        """
+        Public function to setup the progress bar
+        """
         self.__SetUpPB(numero)
 
     def UpdatePB(self):
+        """
+        Public function to update thre progress bar
+        """
         self.__UpdateProgressBar()
     
     def ResetApp(self):
+        """
+        Public function for reset app when the downloads are done.
+        """
         self.__ResetApp()
         self.label_2.setVisible(False)
+        self.plainTextEdit.setEnabled(True)
     
     def __ResetApp(self):
+        """
+        Private function for resetApp, just make the Progress bar no visible
+        """
         self.progressBar.setVisible(False)
     
     def __SetUpPB(self,numero):
+        """
+        Private function for setup the console and progress bar for a new download.
+        """
+        self.plainTextEdit.setEnabled(False)
         self.progressBar.setMaximum(numero)
         self.progressBar.setValue(0)
         self.progressBar.setVisible(True)
         self.label_2.setVisible(True)
     
     def __UpdateProgressBar(self):
+        """
+        Private function to update current value of progress bar
+        """
         self.progressBar.setValue(self.progressBar.value()+1)
 
     def __AddTextToConsole(self,text):
+        """
+        Private function to add a spefici text in the app's console 
+        """
         # self.plainTextEdit.setEnabled(True)
         self.plainTextEdit.setPlainText(self.plainTextEdit.toPlainText()+'\n'+text)
         self.plainTextEdit.verticalScrollBar().setValue(self.plainTextEdit.verticalScrollBar().maximum())
 
     def __ButtonClicked(self):
+        """
+        Private function who start the download of a specific 4chan's thread
+        """
         self.workerThread.SetUrl(self.lineEdit.text())
         self.workerThread.start()
-    
+
+"""
+Worker_thread: Class for async function
+"""  
 class Worker_Thread(QtCore.QThread):
-    signalSetUpPB = QtCore.pyqtSignal(int)
-    signalUpdateConsole = QtCore.pyqtSignal(str)
-    signalUpdatePB = QtCore.pyqtSignal()
-    signalEndApp = QtCore.pyqtSignal()
+    """
+    Signals for the bing with main app
+    """
+    signalSetUpPB = QtCore.pyqtSignal(int) #SetUp the maximum value of PB
+    signalUpdateConsole = QtCore.pyqtSignal(str)#Update main's console
+    signalUpdatePB = QtCore.pyqtSignal()#Update the PB
+    signalEndApp = QtCore.pyqtSignal()#Notify to the main app when the async work is done
     def __init__(self):
+        """
+        Constructor
+        """
         QtCore.QThread.__init__(self)
         self.__chunk_size = 1024
         self.__url = ""
     
     def SetUrl(self,url):
+        """
+        Public function to set the current url
+        """
         self.__url = url
     
     def __SendMessageConsole(self,text):
+        """
+        Private function to update console
+        """
         self.signalUpdateConsole.emit(text)
 
     def __GetFileLinks(self):
+        """
+        Private function to get the url of all files of the thread's url
+        """
         try:
             self.__SendMessageConsole("Accessing Site...")
             r = requests.get(self.__url)
@@ -187,6 +259,9 @@ class Worker_Thread(QtCore.QThread):
         return temp_path
 
     def __DownloadFile(self,urlFile,nameFile,actual_path):
+        """
+        Private function to download a specific file
+        """
         try:
             self.__SendMessageConsole("\t"+nameFile+"\t Url:("+ urlFile +")")
             r = requests.get(urlFile,stream=True)
@@ -208,9 +283,10 @@ class Worker_Thread(QtCore.QThread):
             print(repr(error))
     
     def run(self):
+        """
+        Private function who execute immediately
+        """
         self.__GetFileLinks()
-        
-
 
 def RunApp():
     import sys

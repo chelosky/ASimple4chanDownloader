@@ -158,10 +158,12 @@ class Worker_Thread(QtCore.QThread):
                 self.signalSetUpPB.emit(len(posts))
                 self.__SendMessageConsole("Total Posts: "+str(len(posts)))
                 indexFile=1
+                self.__SendMessageConsole("Creating new Directory...")
+                actual_path = self.__MakeNewDir('\Downloads')
                 self.__SendMessageConsole("Downloading Files...")
                 for post in posts:
                     url_File = "https:"+str(post['href'])
-                    self.__DownloadFile(url_File,"File"+str(indexFile))
+                    self.__DownloadFile(url_File,"File"+str(indexFile),actual_path)
                     indexFile+=1
                 self.__SendMessageConsole("App Finished!")
                 self.signalEndApp.emit()
@@ -171,7 +173,20 @@ class Worker_Thread(QtCore.QThread):
             self.__SendMessageConsole(str(error))
             print(repr(error))
 
-    def __DownloadFile(self,urlFile,nameFile):
+    def __MakeNewDir(self,dirName):
+        temp_path = os.path.dirname(os.path.realpath(__file__))+dirName
+        if not os.path.exists(temp_path):
+            temp_path += '\\'
+            os.makedirs(temp_path)
+        else:
+            idx = 1
+            while(os.path.exists(temp_path + str(idx))):
+                idx+=1
+            temp_path += str(idx)+'\\'
+            os.makedirs(temp_path)
+        return temp_path
+
+    def __DownloadFile(self,urlFile,nameFile,actual_path):
         try:
             self.__SendMessageConsole("\t"+nameFile+"\t Url:("+ urlFile +")")
             r = requests.get(urlFile,stream=True)
@@ -181,7 +196,7 @@ class Worker_Thread(QtCore.QThread):
                 urlStuff = urlFile.split('.')
                 _nameFile = nameFile + '.' + str(urlStuff[len(urlStuff)-1])
                 total_size = int(r.headers['content-length'])
-                with open(_nameFile,'wb') as f:
+                with open(actual_path+_nameFile,'wb') as f:
                     for data in tqdm(iterable=r.iter_content(chunk_size=self.__chunk_size),total=total_size/self.__chunk_size, unit='KB'):
                         f.write(data)
                 self.__SendMessageConsole("\t\t"+nameFile+" Downloaded.")
